@@ -1,0 +1,76 @@
+# .gitlab-ci.yml
+image:
+    name: phosphore/terraform:latest
+    entrypoint: ["/bin/sh", "-c"]
+
+stages:
+  - validate
+  - deploy
+  - destroy
+
+variables:
+   AWX_GROUP: "freeipa"
+   AWX_HOST: "awxtest.skinfra.cloud"
+   AWX_INVENTORY_ID: "2"
+
+terraform_validate:
+  stage: validate
+  script:
+    - terraform fmt --check=true
+    - terraform validate --check-variables=true
+
+#access_validate:
+#  stage: validate
+#  scripts:
+#    -
+
+deploy:
+  stage: deploy
+  script:
+    - deploy
+
+destroy:
+  stage: destroy
+  when: manual
+  script:
+    - destroy
+
+
+.terraform_devops: &terraform_devops |
+  # terraform DevOps variables and functions
+  #set -x
+  #TODO if branch == prod
+  export GOOGLE_CREDENTIALS=${GCE_JSON_TEST}
+
+  export GCS_TERRAFORM_BUCKET=${GCS_TERRAFORM_BUCKET_TEST}
+  export TERRAFORM_PREFIX=state_${CI_COMMIT_REF_SLUG}
+
+  export OVH_DNS_KEY=${OVH_DNS_KEY_TEST}
+  export OVH_DNS_SECRET=${OVH_DNS_SECRET_TEST}
+  export OVH_CONSUMER_KEY=${OVH_DNS_CONSUMER_KEY_TEST}
+  export GKE_PROJECT=${GKE_PROJECT_TEST}
+  export GKE_REGION=${GKE_REGION_TEST}
+
+  cd terraform
+  envtpl backend.tf.tpl
+  envtpl provider.tf.tpl
+
+  function deploy() {
+    terraform init
+    terraform plan
+    terraform apply -auto-approve
+
+  function destroy() {
+    terraform init
+    terraform destroy -auto-approve
+  }
+
+
+.cleanup: &cleanup |
+  rm -R terraform
+
+before_script:
+  - *terraform_devops
+
+after_script:
+  - *cleanup
