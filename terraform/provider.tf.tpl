@@ -1,4 +1,3 @@
-
 # Configuring the OVH provider from environment variables
  provider "ovh-dns-test" {
    endpoint           = "ovh-eu"

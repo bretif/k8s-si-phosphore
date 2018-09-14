@@ -55,6 +55,9 @@ destroy:
   envtpl backend.tf.tpl
   envtpl provider.tf.tpl
 
+  cat backend.tf
+  cat provider.tf
+
   function deploy() {
     terraform init
     terraform plan
