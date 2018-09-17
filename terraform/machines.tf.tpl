@@ -4,5 +4,25 @@ resource "google_container_cluster" "primary" {
   name               = "k8s-si-{{ BRANCH_SHORT }}"
   description        = "PHOSPHORE.SI Information System (SI) k8s cluster"
   zone               = "{{ GKE_REGION_TEST }}"
-  initial_node_count = 2
+  initial_node_count = "2"
+
+  network = "default"
+
+  # node pools will be replicated automatically to the additional zones
+  # additional_zones = [
+  #   "europe-west1-c"
+  # ]
+
+  # node configuration
+  # NOTE: nodes created during the cluster creation become the default node pool
+  node_config {
+    machine_type = "n1-standard-1"
+
+    labels {
+      provider = "google"
+      pool     = "default"
+    }
+
+    tags = ["${var.name}-cluster", "nodes"]
+  }
 }

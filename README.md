@@ -118,3 +118,9 @@ TODO - `GCS_TERRAFORM_JSON_TEST` : Content of json private key downloaded from G
 TODO - `GCS_TERRAFORM_JSON_PROD` : Content of json private key downloaded from Google Cloud Storage for Prod environment
 - `GCS_TERRAFORM_BUCKET_TEST` : Bucket name for terraform state for Test environment
 - `GCS_TERRAFORM_BUCKET_PROD` : Bucket name for terraform state for Prod environment
+
+## References
+
+- [Kubernetes with Terraform on Google Cloud](https://nickcharlton.net/posts/kubernetes-terraform-google-cloud.html)
+- [Example of deploying a Kubernetes cluster to Google Cloud using Terraform ](https://github.com/Artemmkin/terraform-kubernetes)
+-
