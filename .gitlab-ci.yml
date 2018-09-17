@@ -40,7 +40,7 @@ destroy:
 
 .terraform_devops: &terraform_devops |
   # terraform DevOps variables and functions
-  #set -x
+  set -x
   #TODO if branch == prod
   export GOOGLE_CREDENTIALS=${GCE_JSON_TEST}
 
