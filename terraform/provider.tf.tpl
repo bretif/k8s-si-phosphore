@@ -8,6 +8,6 @@ provider "ovh-dns-test" {
 
 # Configure the Google Cloud provider
 provider "google" {
-  project     = "{{ GKE_PROJECT }}"
-  region      = "{{ GKE_REGION }}"
+  project = "{{ GKE_PROJECT }}"
+  region  = "{{ GKE_REGION }}"
 }
