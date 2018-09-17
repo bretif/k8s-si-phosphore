@@ -24,16 +24,6 @@ resource "google_container_cluster" "primary" {
       pool     = "default"
     }
 
-    management {
-      auto_repair  = true
-      auto_upgrade = true
-    }
-
-    autoscaling {
-      min_node_count = 2
-      max_node_count = 5
-    }
-
     tags = ["k8s-si-{{ BRANCH_SHORT }}", "nodes"]
   }
 }
