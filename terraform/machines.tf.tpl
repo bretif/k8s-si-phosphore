@@ -26,15 +26,15 @@ resource "google_container_node_pool" "primary_pool" {
     }
 
     tags = []
+  }
 
-    management {
-      auto_repair  = true
-      auto_upgrade = true
-    }
+  management {
+    auto_repair  = true
+    auto_upgrade = true
+  }
 
-    autoscaling {
-      min_node_count = 2
-      max_node_count = 5
-    }
+  autoscaling {
+    min_node_count = 2
+    max_node_count = 5
   }
 }
