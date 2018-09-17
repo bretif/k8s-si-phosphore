@@ -16,8 +16,6 @@ variables:
 terraform_validate:
   stage: validate
   script:
-    - cat backend.tf
-    - cat provider.tf
     - terraform fmt --check=true --list=true --diff=true
     - terraform init
     - terraform validate --check-variables=true
@@ -54,9 +52,13 @@ destroy:
   export GKE_PROJECT=${GKE_PROJECT_TEST}
   export GKE_REGION=${GKE_REGION_TEST}
 
+  export BRANCH_SHORT=$(echo $CI_COMMIT_REF_SLUG | cut -d '-' -f 1)
+
+
   cd terraform
   envtpl backend.tf.tpl
   envtpl provider.tf.tpl
+  envtpl machines.tf.tpl
 
   function deploy() {
     terraform init
