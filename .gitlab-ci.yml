@@ -21,6 +21,13 @@ terraform_validate:
     - terraform validate --check-variables=true
     - terraform plan
 
+terraform_change:
+  stage: validate
+  script:
+    - terraform init
+    - terraform plan -detailed-exitcode
+  allow_failure: true
+
 #access_validate:
 #  stage: validate
 #  scripts:
