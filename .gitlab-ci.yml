@@ -19,6 +19,7 @@ terraform_validate:
     - terraform fmt --check=true --list=true --diff=true
     - terraform init
     - terraform validate --check-variables=true
+    - terraform plan
 
 #access_validate:
 #  stage: validate
@@ -27,6 +28,7 @@ terraform_validate:
 
 deploy:
   stage: deploy
+  when: manual
   script:
     - deploy
 
