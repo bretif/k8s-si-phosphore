@@ -7,12 +7,9 @@ resource "google_container_cluster" "primary" {
   min_master_version       = "1.10.7-gke.1"
   remove_default_node_pool = true
 
-  network = "default"
-
-  # node pools will be replicated automatically to the additional zones
-  # additional_zones = [
-  #   "europe-west1-c"
-  # ]
+  node_pool {
+    name = "default-pool"
+  }
 }
 
 resource "google_container_node_pool" "primary-pool" {
