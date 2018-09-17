@@ -23,6 +23,6 @@ resource "google_container_cluster" "primary" {
       pool     = "default"
     }
 
-    tags = ["${var.name}-cluster", "nodes"]
+    tags = ["${google_container_cluster.primary.name}", "nodes"]
   }
 }
