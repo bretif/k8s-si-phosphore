@@ -23,6 +23,6 @@ resource "google_container_cluster" "primary" {
       pool     = "default"
     }
 
-    tags = ["${google_container_cluster.primary.name}", "nodes"]
+    tags = ["k8s-si-{{ BRANCH_SHORT }}", "nodes"]
   }
 }
