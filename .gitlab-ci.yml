@@ -19,6 +19,7 @@ terraform_validate:
     - cat backend.tf
     - cat provider.tf
     - terraform fmt --check=true --list=true --diff=true
+    - terraform init
     - terraform validate --check-variables=true
 
 #access_validate:
