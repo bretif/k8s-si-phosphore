@@ -4,6 +4,7 @@ resource "google_container_cluster" "primary" {
   name               = "k8s-si-{{ BRANCH_SHORT }}"
   description        = "PHOSPHORE.SI Information System (SI) k8s cluster"
   zone               = "{{ GKE_REGION_TEST }}"
+  min_master_version = ""1.10.7-gke.1"
   initial_node_count = "2"
 
   network = "default"
@@ -21,6 +22,16 @@ resource "google_container_cluster" "primary" {
     labels {
       provider = "google"
       pool     = "default"
+    }
+
+    management {
+      auto_repair  = true
+      auto_upgrade = true
+    }
+
+    autoscaling {
+      min_node_count = 2
+      max_node_count = 5
     }
 
     tags = ["k8s-si-{{ BRANCH_SHORT }}", "nodes"]
