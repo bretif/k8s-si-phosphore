@@ -16,6 +16,8 @@ variables:
 terraform_validate:
   stage: validate
   script:
+    - cat backend.tf
+    - cat provider.tf
     - terraform fmt --check=true
     - terraform validate --check-variables=true
 
@@ -54,9 +56,6 @@ destroy:
   cd terraform
   envtpl backend.tf.tpl
   envtpl provider.tf.tpl
-
-  cat backend.tf
-  cat provider.tf
 
   function deploy() {
     terraform init
