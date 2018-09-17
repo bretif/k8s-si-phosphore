@@ -39,8 +39,8 @@ destroy:
 
 
 .terraform_devops: &terraform_devops |
-  # terraform DevOps variables and functions
-  set -x
+  # Terraform DevOps variables and functions
+  #set -x
   #TODO if branch == prod
   export GOOGLE_CREDENTIALS=${GCE_JSON_TEST}
 
@@ -61,6 +61,7 @@ destroy:
     terraform init
     terraform plan
     terraform apply -auto-approve
+  }
 
   function destroy() {
     terraform init
