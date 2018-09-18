@@ -35,7 +35,7 @@ resource "google_container_cluster" "k8s-si-cluster" {
   min_master_version = "1.10.7-gke.1"
 
   node_pool = [{
-      name       = "default-pool"
-      node_count = 0
-    }]
+    name       = "default-pool"
+    node_count = 0
+  }]
 }
