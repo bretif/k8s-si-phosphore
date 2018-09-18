@@ -10,7 +10,6 @@ resource "google_container_cluster" "k8s_si_cluster" {
     update = "10m"
     delete = "40m"
   }
-
 }
 
 resource "google_container_node_pool" "primary-pool" {
