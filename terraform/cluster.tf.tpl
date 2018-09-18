@@ -2,7 +2,7 @@
 resource "google_container_cluster" "primary" {
   provider                 = "google"
   name                     = "k8s-si-{{ BRANCH_SHORT }}"
-  description              = "PHOSPHORE.SI Information System (SI) k8s cluster"
+  description              = "PHOSPHORE.si Information System (SI) k8s cluster"
   zone                     = "{{ GKE_REGION_TEST }}"
   min_master_version       = "1.10.7-gke.1"
   remove_default_node_pool = true

@@ -17,14 +17,12 @@ terraform_validate:
   stage: validate
   script:
     - terraform fmt --check=true --list=true --diff=true
-    - terraform init
     - terraform validate --check-variables=true
     - terraform plan
 
 terraform_change:
   stage: validate
   script:
-    - terraform init
     - terraform plan -detailed-exitcode
   allow_failure: true
 
@@ -63,14 +61,23 @@ destroy:
 
   export BRANCH_SHORT=$(echo $CI_COMMIT_REF_SLUG | cut -d '-' -f 1)
 
-
   cd terraform
   envtpl backend.tf.tpl
   envtpl provider.tf.tpl
-  envtpl machines.tf.tpl
+  envtpl cluster.tf.tpl
+  envtpl cluster_init.tf.tpl
+
+  terraform init
+
+  # distinct cluster creation because of
+  # https://github.com/terraform-providers/terraform-provider-google/issues/1712
+  if [[ -z `terraform state list` ]]; then
+    rm cluster.tf.tpl
+  else
+    rm cluster_init.tf.tpl
+  fi
 
   function deploy() {
-    terraform init
     terraform plan
     terraform apply -auto-approve
   }
