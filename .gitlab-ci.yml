@@ -31,12 +31,25 @@ deploy:
   when: manual
   script:
     - deploy
+  environment:
+    name: review/$CI_BUILD_REF_NAME
+    #url: http://${CI_BUILD_REF_SLUG}.${RANCHER_CI_STACK}.${APPS_CI_DOMAIN}
+    on_stop: destroy
+  only:
+    - branches
+  except:
+    - preprod
+    - prod
+
 
 destroy:
   stage: destroy
   when: manual
   script:
     - destroy
+  environment:
+    name: review/$CI_BUILD_REF_NAME
+    action: stop
 
 
 .terraform_devops: &terraform_devops |
