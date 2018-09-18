@@ -1,0 +1,119 @@
+# .gitlab-ci.yml
+image:
+    name: phosphore/terraform:latest
+    entrypoint: ["/bin/sh", "-c"]
+
+stages:
+  - validate
+  - deploy
+  - destroy
+
+terraform_validate:
+  stage: validate
+  script:
+    - terraform fmt --check=true --list=true --diff=true
+    - terraform validate --check-variables=true
+    - terraform plan
+
+terraform_change:
+  stage: validate
+  script:
+    - terraform plan -detailed-exitcode
+  allow_failure: true
+
+#access_validate:
+#  stage: validate
+#  scripts:
+#    -
+
+deploy:
+  stage: deploy
+  when: manual
+  script:
+    - deploy
+  environment:
+    name: review/$CI_BUILD_REF_NAME
+    #url: http://${CI_BUILD_REF_SLUG}.${RANCHER_CI_STACK}.${APPS_CI_DOMAIN}
+    on_stop: destroy
+  only:
+    - branches
+  except:
+    - preprod
+    - prod
+
+
+destroy:
+  stage: destroy
+  when: manual
+  script:
+    - destroy
+  environment:
+    name: review/$CI_BUILD_REF_NAME
+    action: stop
+
+
+.terraform_devops: &terraform_devops |
+  # Terraform DevOps variables and functions
+  #set -x
+  #TODO if branch == prod
+  export GOOGLE_CREDENTIALS=${GCE_JSON_TEST}
+
+  export GCS_TERRAFORM_BUCKET=${GCS_TERRAFORM_BUCKET_TEST}
+  export TERRAFORM_PREFIX=state_${CI_COMMIT_REF_SLUG}
+
+  export OVH_DNS_KEY=${OVH_DNS_KEY_TEST}
+  export OVH_DNS_SECRET=${OVH_DNS_SECRET_TEST}
+  export OVH_CONSUMER_KEY=${OVH_DNS_CONSUMER_KEY_TEST}
+  export GKE_PROJECT=${GKE_PROJECT_TEST}
+  export GKE_REGION=${GKE_REGION_TEST}
+
+  export BRANCH_SHORT=$(echo $CI_COMMIT_REF_SLUG | cut -d '-' -f 1)
+
+  cd terraform
+  envtpl backend.tf.tpl
+  envtpl provider.tf.tpl
+
+  terraform init
+
+  envtpl cluster.tf.tpl
+  envtpl cluster_init.tf.tpl
+
+  # distinct cluster creation because of
+  # https://github.com/terraform-providers/terraform-provider-google/issues/1712
+  if [[ -z `terraform state list` ]]; then
+    mv cluster.tf cluster.tf.disabled
+  else
+    echo "Cluster already deployed"
+    rm cluster_init.tf
+  fi
+
+  ls -l
+
+  function deploy() {
+    if [[ -f "cluster_init.tf" ]]; then
+      echo "Cluster init - Run terraform first time to create empty cluster"
+      terraform plan
+      terraform apply -auto-approve
+      mv cluster.tf.disabled cluster.tf
+      rm cluster_init.tf
+      terraform fmt --check=true --list=true --diff=true
+      terraform validate --check-variables=true
+    fi
+    terraform plan
+    terraform apply -auto-approve
+  }
+
+  function destroy() {
+    terraform init
+    terraform destroy -auto-approve
+  }
+
+
+.cleanup: &cleanup |
+  rm -R terraform
+
+before_script:
+  - *terraform_devops
+
+after_script:
+  - *cleanup
