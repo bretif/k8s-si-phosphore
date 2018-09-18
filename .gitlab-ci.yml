@@ -8,11 +8,6 @@ stages:
   - deploy
   - destroy
 
-variables:
-   AWX_GROUP: "freeipa"
-   AWX_HOST: "awxtest.skinfra.cloud"
-   AWX_INVENTORY_ID: "2"
-
 terraform_validate:
   stage: validate
   script:
