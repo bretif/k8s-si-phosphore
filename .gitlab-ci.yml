@@ -73,8 +73,7 @@ destroy:
   # distinct cluster creation because of
   # https://github.com/terraform-providers/terraform-provider-google/issues/1712
   if [[ -z `terraform state list` ]]; then
-    echo "Cluster init"
-    rm cluster.tf
+    mv cluster.tf cluster.tf.disabled
   else
     echo "Cluster already deployed"
     rm cluster_init.tf
@@ -83,6 +82,15 @@ destroy:
   ls -l
 
   function deploy() {
+    if [[ -f "cluster_init.tf" ]]; then
+      echo "Cluster init - Run terraform first time to create empty cluster"
+      terraform plan
+      terraform apply -auto-approve
+      mv cluster.tf.disabled cluster.tf
+      rm cluster_init.tf
+      terraform fmt --check=true --list=true --diff=true
+      terraform validate --check-variables=true
+    fi
     terraform plan
     terraform apply -auto-approve
   }
