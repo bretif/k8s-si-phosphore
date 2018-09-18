@@ -16,7 +16,6 @@ variables:
 terraform_validate:
   stage: validate
   script:
-    - ls -l
     - terraform fmt --check=true --list=true --diff=true
     - terraform validate --check-variables=true
     - terraform plan
@@ -65,18 +64,23 @@ destroy:
   cd terraform
   envtpl backend.tf.tpl
   envtpl provider.tf.tpl
-  envtpl cluster.tf.tpl
-  envtpl cluster_init.tf.tpl
 
   terraform init
+
+  envtpl cluster.tf.tpl
+  envtpl cluster_init.tf.tpl
 
   # distinct cluster creation because of
   # https://github.com/terraform-providers/terraform-provider-google/issues/1712
   if [[ -z `terraform state list` ]]; then
-    rm cluster.tf.tpl
+    echo "Cluster alreday deployed"
+    rm cluster.tf
   else
-    rm cluster_init.tf.tpl
+    echo cluster init
+    rm cluster_init.tf
   fi
+
+  ls -l
 
   function deploy() {
     terraform plan
