@@ -2,18 +2,21 @@
 
 k8s-si-phosphore stands for Kubernetes IS (SI in French) for PHOSPHORE.
 
-De ploy as **infraascode** kubernets cluster(s)
+Deploy as **infraascode** kubernets cluster(s)
 
 ## What?
 
-Purpose of this project is to deploy as Kubernetes cluster that will host PHOSPHORE.si SI apps
+This project deploy:
 
-    - Gitlab
-    - AWX
-    - Prometheus
-    - ...
+- k8s cluster
+- Helm
 
-Currently cluster is deployed on Google Cloud platform
+Purpose of this cluster is to host PHOSPHORE.si SI apps (Gitlab, AWX, Prometheus, ...)
+
+Currently cluster is deployed:
+
+- Google Cloud platform
+- Helm v
 
 Main tools used are [Terraform](https://www.terraform.io) and [Ansible AWX](https://github.com/ansible/awx)
 
