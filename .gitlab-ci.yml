@@ -73,10 +73,10 @@ destroy:
   # distinct cluster creation because of
   # https://github.com/terraform-providers/terraform-provider-google/issues/1712
   if [[ -z `terraform state list` ]]; then
-    echo "Cluster alreday deployed"
+    echo "Cluster init"
     rm cluster.tf
   else
-    echo cluster init
+    echo "Cluster already deployed"
     rm cluster_init.tf
   fi
 
