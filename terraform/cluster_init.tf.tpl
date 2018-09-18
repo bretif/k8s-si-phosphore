@@ -1,4 +1,4 @@
-resource "google_container_cluster" "k8s-si-cluster" {
+resource "google_container_cluster" "k8s_si_cluster" {
   provider           = "google"
   name               = "k8s-si-{{ BRANCH_SHORT }}"
   description        = "PHOSPHORE.si Information System (SI) k8s cluster"
@@ -14,7 +14,7 @@ resource "google_container_cluster" "k8s-si-cluster" {
 resource "google_container_node_pool" "primary-pool" {
   provider   = "google"
   name       = "primary-pool"
-  cluster    = "${google_container_cluster.primary.name}"
+  cluster    = "${google_container_cluster.k8s_si_cluster.name}"
   zone       = "{{ GKE_REGION_TEST }}"
   node_count = "2"
 
