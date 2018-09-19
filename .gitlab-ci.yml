@@ -17,6 +17,8 @@ stages:
   export OVH_DNS_KEY=${OVH_DNS_KEY_TEST}
   export OVH_DNS_SECRET=${OVH_DNS_SECRET_TEST}
   export OVH_CONSUMER_KEY=${OVH_DNS_CONSUMER_KEY_TEST}
+  export GKE_PROJECT=${GKE_PROJECT_TEST}
+  export GKE_REGION=${GKE_REGION_TEST}
 
 .terraform_devops: &terraform_devops |
   # Terraform DevOps variables and functions
@@ -25,9 +27,6 @@ stages:
 
   export GCS_TERRAFORM_BUCKET=${GCS_TERRAFORM_BUCKET_TEST}
   export TERRAFORM_PREFIX=state_${CI_COMMIT_REF_SLUG}
-
-  export GKE_PROJECT=${GKE_PROJECT_TEST}
-  export GKE_REGION=${GKE_REGION_TEST}
 
   cd terraform
   envtpl backend.tf.tpl
@@ -41,6 +40,7 @@ stages:
   # distinct cluster creation because of
   # https://github.com/terraform-providers/terraform-provider-google/issues/1712
   if [[ -z `terraform state list` ]]; then
+    echo "Create new cluster"
     mv cluster.tf cluster.tf.disabled
   else
     echo "Cluster already deployed"
@@ -72,7 +72,6 @@ stages:
 .k8s_devops: &k8s_devops |
   echo ${GOOGLE_CREDENTIALS} > ./google.key
   gcloud auth activate-service-account --key-file=./google.key
-  gcloud config set project ${GKE_PROJECT}
   gcloud container clusters get-credentials "k8s-si-${BRANCH_SHORT}" --zone ${GKE_REGION} --project ${GKE_PROJECT}
 
   function configure-k8s() {
