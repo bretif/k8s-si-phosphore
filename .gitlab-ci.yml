@@ -87,7 +87,6 @@ terraform_validate:
     - *devops
     - *terraform_devops
   after_script:
-    - *devops
     - *terraform_cleanup
   script:
     - terraform fmt --check=true --list=true --diff=true
@@ -97,6 +96,7 @@ terraform_validate:
 terraform_change:
   stage: validate-terraform
   before_script:
+    - *devops
     - *terraform_devops
   after_script:
     - *terraform_cleanup
