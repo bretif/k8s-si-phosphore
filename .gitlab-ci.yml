@@ -70,7 +70,7 @@ stages:
   rm -R terraform
 
 .k8s_devops: &k8s_devops |
-  cat ${GOOGLE_CREDENTIALS} > ./google.key
+  echo ${GOOGLE_CREDENTIALS} > ./google.key
   gcloud auth activate-service-account --key-file=./google.key
   gcloud config set project ${GKE_PROJECT}
   gcloud container clusters get-credentials "k8s-si-${BRANCH_SHORT}" --zone ${GKE_REGION} --project ${GKE_PROJECT}
@@ -135,6 +135,7 @@ configure:
   before_script:
     - *devops
     - *k8s_devops
+  when: manual
   script:
     - configure-k8s
   environment:
