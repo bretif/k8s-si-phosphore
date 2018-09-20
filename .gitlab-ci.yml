@@ -91,6 +91,7 @@ variables:
       helm init --upgrade --service-account tiller
     else
       echo "Tiller serviceaccount already created"
+      sleep 60
     fi
     helm version
   }
