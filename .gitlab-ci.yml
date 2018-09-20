@@ -67,6 +67,7 @@ variables:
   function destroy() {
     terraform init
     terraform destroy -auto-approve
+    terraform destroy -auto-approve
   }
 
 .terraform_cleanup: &terraform_cleanup |
