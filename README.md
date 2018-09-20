@@ -61,8 +61,8 @@ You should then be asked to select which account to use. If GKE API access is se
 Next we need to add role to manage k8s cluster and terraform bucket.
 In `IAM` menu your service account must have roles:
 
-- Compute Engine Service Agent
-- Kubernetes Engine Service Agent
+- Editor
+- Kubernetes Engine Admin
 
 You need to copy the content of the file to Gitlab project variable `GOOGLE_CREDENTIALS_TEST` or `GOOGLE_CREDENTIALS_PROD`
 
@@ -110,6 +110,8 @@ Normally the shoud be defined in Gitlab `infrascode/si` group
 - `GKE_PROJECT_PROD` : GKE project where k8s Prod is deployed
 - `GKE_REGION_TEST` : GKE Region where k8s Test is deployed
 - `GKE_REGION_PROD` : GKE Region where k8s Prod is deployed
+- `GKE_CREDENTIALS_TEST` : Service account json private key downloaded from Google Cloud for Test
+- `GKE_CREDENTIALS_PROD` : Service account json private key downloaded from Google Cloud for Prod
 
 
 ### Gitlab project variables

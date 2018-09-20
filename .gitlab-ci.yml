@@ -67,7 +67,6 @@ variables:
   function destroy() {
     terraform init
     terraform destroy -auto-approve
-    terraform destroy -auto-approve
   }
 
 .terraform_cleanup: &terraform_cleanup |
@@ -133,7 +132,7 @@ terraform_deploy:
     - *terraform_devops
   after_script:
     - *terraform_cleanup
-  when: manual
+#  when: manual
   script:
     - deploy
   environment:
@@ -152,7 +151,7 @@ configure:
   before_script:
     - *devops
     - *k8s_devops
-  when: manual
+#  when: manual
   script:
     - configure-k8s
   environment:
