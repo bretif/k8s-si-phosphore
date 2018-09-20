@@ -2,7 +2,7 @@
 
 k8s-si-phosphore stands for Kubernetes IS (SI in French) for PHOSPHORE.
 
-Deploy as **infraascode** kubernets cluster(s)
+Deploy as **infraascode** kubernetes cluster(s)
 
 ## What?
 
@@ -52,26 +52,25 @@ You can set this up in the [Google Cloud Console](https://console.cloud.google.c
 Set properly Gitlab variables `GKE_PROJECT_*` and `GKE_REGION_*`
 
 
-##### API account GCE (Compute)
+##### Google API - Service account
 
 We need to set up a few things to have access via the API. First, enable the GKE API in the [Google Developer’s Console](https://console.developers.google.com/apis/api/container.googleapis.com/overview).
 Then, we’ll need service account credentials to use the API. Create a new key in [Google Cloud service account file](https://console.cloud.google.com/apis/credentials/serviceaccountkey)
 You should then be asked to select which account to use. If GKE API access is setup correctly, you’ll see “Compute Engine default service account”. That’ll do fine for our requirements, so select that and “JSON” as the type.
 
-You need to copy the content of the file to Gitlab project variable `GCE_JSON_TEST` or `GCE_JSON_PROD`
+Next we need to add role to manage k8s cluster and terraform bucket.
+In `IAM` menu your service account must have roles:
 
-##### API account GCS (Storage)
+- Editor
+- Kubernetes Engine Admin
 
-Go to [IAM and administration/Service account](ttps://console.cloud.google.com/iam-admin/serviceaccounts) and create a new service account. Do not add any role.
-
-TODO remove and use `GCE_JSON_TEST`
-You need to copy the content of the file to Gitlab project variable `GCS_TERRAFORM_JSON_TEST` or `GCS_TERRAFORM_JSON_PROD`
+You need to copy the content of the file to Gitlab project variable `GOOGLE_CREDENTIALS_TEST` or `GOOGLE_CREDENTIALS_PROD`
 
 ###### bucket terraform
 
 We use [GCS bucket as backend in order that terraform store its state](https://www.terraform.io/docs/backends/types/gcs.html)
 
-Create the buckets and set GCS serive account as `Storage Object Admin`.
+Create the buckets and set GCS service account as `Storage Object Admin`.
 
 Put details of bucket in `GCS_TERRAFORM_BUCKET_*`
 
@@ -97,7 +96,7 @@ TODO: Token creation need to be in another doc. Screenshot [OVH_API_createtoken.
 ### Gitlab group variables
 
 Below variables need to be defined for CI/CD.
-Normally the shoud be defined in Gitlab infrascode group
+Normally the shoud be defined in Gitlab `infrascode/si` group
 
 - `DOMAIN_PROD` : DNS domain used for Prod `phosphore.si`
 - `DOMAIN_TEST` : DNS domain used for Test `phosphoresi.net`
@@ -107,20 +106,21 @@ Normally the shoud be defined in Gitlab infrascode group
 - `OVH_DNS_CONSUMER_KEY_PROD` : Consumer key to update Prod domain
 - `OVH_DNS_KEY_PROD` : Key to update Prod domain
 - `OVH_DNS_SECRET_PROD` : Secret to update Prod domain
+- `GKE_PROJECT_TEST` : GKE project where k8s Test is deployed
+- `GKE_PROJECT_PROD` : GKE project where k8s Prod is deployed
+- `GKE_REGION_TEST` : GKE Region where k8s Test is deployed
+- `GKE_REGION_PROD` : GKE Region where k8s Prod is deployed
+- `GKE_CREDENTIALS_TEST` : Service account json private key downloaded from Google Cloud for Test
+- `GKE_CREDENTIALS_PROD` : Service account json private key downloaded from Google Cloud for Prod
 
 
 ### Gitlab project variables
 
-- `GKE_PROJECT_TEST` : GKE project where k8s Test is deployed
-- `GKE_PROJECT_PROD` : GKE project where k8s Prod is deployed
-TODO - `GKE_REGION_TEST` : GKE Region where k8s Test is deployed
-TODO - `GKE_REGION_PROD` : GKE Region where k8s Prod is deployed
-- `GCE_JSON_TEST` : Content of json private key downloaded from Google Compute Engine cf [Google cloud platform section](Google cloud platform) for Test environment
-- `GCE_JSON_PROD` : Content of json private key downloaded from Google Compute Engine cf [Google cloud platform section](Google cloud platform) for Prod environment
-TODO - `GCS_TERRAFORM_JSON_TEST` : Content of json private key downloaded from Google Cloud Storage for Test environment
-TODO - `GCS_TERRAFORM_JSON_PROD` : Content of json private key downloaded from Google Cloud Storage for Prod environment
-- `GCS_TERRAFORM_BUCKET_TEST` : Bucket name for terraform state for Test environment
-- `GCS_TERRAFORM_BUCKET_PROD` : Bucket name for terraform state for Prod environment
+- `GOOGLE_CREDENTIALS_TEST` : Service account json private key downloaded from Google Cloud for Test
+- `GOOGLE_CREDENTIALS_PROD` : Service account json private key downloaded from Google Cloud for Prod
+- `GCS_TERRAFORM_BUCKET_TEST` : Bucket for terraform backend Test
+- `GCS_TERRAFORM_BUCKET_PROD` : Bucket for terraform backend Prod
+
 
 ## References
 

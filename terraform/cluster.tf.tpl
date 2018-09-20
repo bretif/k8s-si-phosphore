@@ -39,4 +39,10 @@ resource "google_container_node_pool" "primary-pool" {
     min_node_count = 2
     max_node_count = 5
   }
+
+  timeouts {
+    create = "30m"
+    update = "10m"
+    delete = "40m"
+  }
 }

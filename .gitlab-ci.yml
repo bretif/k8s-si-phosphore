@@ -4,70 +4,32 @@ image:
     entrypoint: ["/bin/sh", "-c"]
 
 stages:
-  - validate
-  - deploy
+  - validate-terraform
+  - deploy-k8s
+  - configure-k8s
   - destroy
 
-terraform_validate:
-  stage: validate
-  script:
-    - terraform fmt --check=true --list=true --diff=true
-    - terraform validate --check-variables=true
-    - terraform plan
+variables:
+  HELM_VERSION: 2.10.0
 
-terraform_change:
-  stage: validate
-  script:
-    - terraform plan -detailed-exitcode
-  allow_failure: true
+#-------------------------------------------------------------------------------
 
-#access_validate:
-#  stage: validate
-#  scripts:
-#    -
-
-deploy:
-  stage: deploy
-  when: manual
-  script:
-    - deploy
-  environment:
-    name: review/$CI_BUILD_REF_NAME
-    #url: http://${CI_BUILD_REF_SLUG}.${RANCHER_CI_STACK}.${APPS_CI_DOMAIN}
-    on_stop: destroy
-  only:
-    - branches
-  except:
-    - preprod
-    - prod
-
-
-destroy:
-  stage: destroy
-  when: manual
-  script:
-    - destroy
-  environment:
-    name: review/$CI_BUILD_REF_NAME
-    action: stop
-
-
-.terraform_devops: &terraform_devops |
-  # Terraform DevOps variables and functions
-  #set -x
-  #TODO if branch == prod
-  export GOOGLE_CREDENTIALS=${GCE_JSON_TEST}
-
-  export GCS_TERRAFORM_BUCKET=${GCS_TERRAFORM_BUCKET_TEST}
-  export TERRAFORM_PREFIX=state_${CI_COMMIT_REF_SLUG}
-
+.devops: &devops |
+  export GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS_TEST}
+  export BRANCH_SHORT=$(echo $CI_COMMIT_REF_SLUG | cut -d '-' -f 1)
   export OVH_DNS_KEY=${OVH_DNS_KEY_TEST}
   export OVH_DNS_SECRET=${OVH_DNS_SECRET_TEST}
   export OVH_CONSUMER_KEY=${OVH_DNS_CONSUMER_KEY_TEST}
   export GKE_PROJECT=${GKE_PROJECT_TEST}
   export GKE_REGION=${GKE_REGION_TEST}
 
-  export BRANCH_SHORT=$(echo $CI_COMMIT_REF_SLUG | cut -d '-' -f 1)
+.terraform_devops: &terraform_devops |
+  # Terraform DevOps variables and functions
+  #set -x
+  #TODO if branch == prod
+
+  export GCS_TERRAFORM_BUCKET=${GCS_TERRAFORM_BUCKET_TEST}
+  export TERRAFORM_PREFIX=state_${CI_COMMIT_REF_SLUG}
 
   cd terraform
   envtpl backend.tf.tpl
@@ -81,13 +43,12 @@ destroy:
   # distinct cluster creation because of
   # https://github.com/terraform-providers/terraform-provider-google/issues/1712
   if [[ -z `terraform state list` ]]; then
+    echo "Create new cluster"
     mv cluster.tf cluster.tf.disabled
   else
     echo "Cluster already deployed"
     rm cluster_init.tf
   fi
-
-  ls -l
 
   function deploy() {
     if [[ -f "cluster_init.tf" ]]; then
@@ -108,12 +69,105 @@ destroy:
     terraform destroy -auto-approve
   }
 
-
-.cleanup: &cleanup |
+.terraform_cleanup: &terraform_cleanup |
   rm -R terraform
 
-before_script:
-  - *terraform_devops
+.k8s_devops: &k8s_devops |
+  echo ${GOOGLE_CREDENTIALS} > ./google.key
+  gcloud auth activate-service-account --key-file=./google.key
+  gcloud container clusters get-credentials "k8s-si-${BRANCH_SHORT}" --zone ${GKE_REGION} --project ${GKE_PROJECT}
 
-after_script:
-  - *cleanup
+  function configure-k8s() {
+    kubectl version
+    curl --silent https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION}-linux-amd64.tar.gz | tar -xz
+    mv linux-amd64/helm /usr/bin
+    helm version --client
+    helm init --upgrade
+    if [[ ! `kubectl get serviceaccount --namespace kube-system | grep tiller` ]]; then
+      echo "Tiller serviceaccount not created - Do it!"
+      kubectl create serviceaccount --namespace kube-system tiller
+      kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+      helm init --service-account tiller
+      helm init --upgrade --service-account tiller
+    else
+      echo "Tiller serviceaccount already created"
+      sleep 60
+    fi
+    helm version
+  }
+
+#-------------------------------------------------------------------------------
+
+terraform_validate:
+  stage: validate-terraform
+  before_script:
+    - *devops
+    - *terraform_devops
+  after_script:
+    - *terraform_cleanup
+  script:
+    - terraform fmt --check=true --list=true --diff=true
+    - terraform validate --check-variables=true
+    - terraform plan
+
+terraform_change:
+  stage: validate-terraform
+  before_script:
+    - *devops
+    - *terraform_devops
+  after_script:
+    - *terraform_cleanup
+  script:
+    - terraform plan -detailed-exitcode
+  allow_failure: true
+
+#TODO access_validate:
+#  stage: validate
+#  scripts:
+#    -
+
+terraform_deploy:
+  stage: deploy-k8s
+  before_script:
+    - *devops
+    - *terraform_devops
+  after_script:
+    - *terraform_cleanup
+#  when: manual
+  script:
+    - deploy
+  environment:
+    name: review/$CI_BUILD_REF_NAME
+    #url: http://${CI_BUILD_REF_SLUG}.${RANCHER_CI_STACK}.${APPS_CI_DOMAIN}
+    on_stop: destroy
+  only:
+    - branches
+  except:
+    - preprod
+    - prod
+
+configure:
+  stage: configure-k8s
+  image: google/cloud-sdk:latest
+  before_script:
+    - *devops
+    - *k8s_devops
+#  when: manual
+  script:
+    - configure-k8s
+  environment:
+    name: review/$CI_BUILD_REF_NAME
+  only:
+    - branches
+
+destroy:
+  stage: destroy
+  when: manual
+  before_script:
+    - *devops
+    - *terraform_devops
+  script:
+    - destroy
+  environment:
+    name: review/$CI_BUILD_REF_NAME
+    action: stop
