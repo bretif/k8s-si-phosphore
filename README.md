@@ -2,7 +2,7 @@
 
 k8s-si-phosphore stands for Kubernetes IS (SI in French) for PHOSPHORE.
 
-Deploy as **infraascode** kubernets cluster(s)
+Deploy as **infraascode** kubernetes cluster(s)
 
 ## What?
 
