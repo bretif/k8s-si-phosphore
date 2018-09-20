@@ -15,7 +15,7 @@ variables:
 #-------------------------------------------------------------------------------
 
 .devops: &devops |
-  export GOOGLE_CREDENTIALS=${GCE_JSON_TEST}
+  export GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS_TEST}
   export BRANCH_SHORT=$(echo $CI_COMMIT_REF_SLUG | cut -d '-' -f 1)
   export OVH_DNS_KEY=${OVH_DNS_KEY_TEST}
   export OVH_DNS_SECRET=${OVH_DNS_SECRET_TEST}
