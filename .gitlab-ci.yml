@@ -83,9 +83,12 @@ variables:
     mv linux-amd64/helm /usr/bin
     helm version --client
     helm init --upgrade
-    kubectl create -f helm/rbac-config.yaml
+    kubectl create serviceaccount --namespace kube-system tiller
+    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
     helm init --service-account tiller
     helm init --upgrade --service-account tiller
+    helm version
+    kubectl get serviceaccount
   }
 
 #-------------------------------------------------------------------------------
