@@ -96,7 +96,7 @@ TODO: Token creation need to be in another doc. Screenshot [OVH_API_createtoken.
 ### Gitlab group variables
 
 Below variables need to be defined for CI/CD.
-Normally the shoud be defined in Gitlab infrascode group
+Normally the shoud be defined in Gitlab `infrascode/si` group
 
 - `DOMAIN_PROD` : DNS domain used for Prod `phosphore.si`
 - `DOMAIN_TEST` : DNS domain used for Test `phosphoresi.net`
@@ -106,14 +106,14 @@ Normally the shoud be defined in Gitlab infrascode group
 - `OVH_DNS_CONSUMER_KEY_PROD` : Consumer key to update Prod domain
 - `OVH_DNS_KEY_PROD` : Key to update Prod domain
 - `OVH_DNS_SECRET_PROD` : Secret to update Prod domain
-
-
-### Gitlab project variables
-
 - `GKE_PROJECT_TEST` : GKE project where k8s Test is deployed
 - `GKE_PROJECT_PROD` : GKE project where k8s Prod is deployed
 - `GKE_REGION_TEST` : GKE Region where k8s Test is deployed
 - `GKE_REGION_PROD` : GKE Region where k8s Prod is deployed
+
+
+### Gitlab project variables
+
 - `GOOGLE_CREDENTIALS_TEST` : Service account json private key downloaded from Google Cloud for Test
 - `GOOGLE_CREDENTIALS_PROD` : Service account json private key downloaded from Google Cloud for Prod
 - `GCS_TERRAFORM_BUCKET_TEST` : Bucket for terraform backend Test
