@@ -83,12 +83,13 @@ variables:
     mv linux-amd64/helm /usr/bin
     helm version --client
     helm init --upgrade
-    kubectl create serviceaccount --namespace kube-system tiller
-    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+    if [[ ! `kubectl get serviceaccount --namespace kube-system | grep tiller` ]]; then
+      kubectl create serviceaccount --namespace kube-system tiller
+      kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+    fi
     helm init --service-account tiller
     helm init --upgrade --service-account tiller
     helm version
-    kubectl get serviceaccount
   }
 
 #-------------------------------------------------------------------------------
@@ -163,12 +164,3 @@ destroy:
   environment:
     name: review/$CI_BUILD_REF_NAME
     action: stop
-
-
-before_script:
-  - *devops
-  - *terraform_devops
-
-after_script:
-  - *devops
-  - *terraform_cleanup

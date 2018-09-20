@@ -60,6 +60,9 @@ You should then be asked to select which account to use. If GKE API access is se
 
 You need to copy the content of the file to Gitlab project variable `GCE_JSON_TEST` or `GCE_JSON_PROD`
 
+Add role:
+Kubernetes Engine Service Agent
+
 ##### API account GCS (Storage)
 
 Go to [IAM and administration/Service account](ttps://console.cloud.google.com/iam-admin/serviceaccounts) and create a new service account. Do not add any role.
