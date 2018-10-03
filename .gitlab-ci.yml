@@ -5,9 +5,12 @@ image:
 
 stages:
   - validate-terraform
-  - review
-  - staging
-  - prod
+  - review-deploy
+  - review-configure
+  - staging-deploy
+  - staging-configure
+  - prod-deploy
+  - prod-configure
   - destroy
 
 variables:
@@ -143,7 +146,7 @@ terraform-change:
 #    -
 
 review-deploy:
-  stage: review
+  stage: review-deploy
   before_script:
     - *devops
     - *terraform_devops
@@ -162,7 +165,7 @@ review-deploy:
     - prod
 
 review-configure:
-  stage: review
+  stage: review-configure
   image: google/cloud-sdk:latest
   before_script:
     - *devops
@@ -179,7 +182,7 @@ review-configure:
     - prod
 
 staging-deploy-k8s:
-  stage: staging
+  stage: staging-deploy
   before_script:
     - *devops
     - *terraform_devops
@@ -195,7 +198,7 @@ staging-deploy-k8s:
   when: manual
 
 staging-configure-k8s:
-  stage: staging
+  stage: staging-configure
   image: google/cloud-sdk:latest
   before_script:
     - *devops
@@ -210,7 +213,7 @@ staging-configure-k8s:
   when: manual
 
 prod-deploy-k8s:
-  stage: prod
+  stage: prod-deploy
   before_script:
     - *devops
     - *terraform_devops
@@ -226,7 +229,7 @@ prod-deploy-k8s:
   when: manual
 
 prod-configure-k8s:
-  stage: prod
+  stage: prod-configure
   image: google/cloud-sdk:latest
   before_script:
     - *devops
