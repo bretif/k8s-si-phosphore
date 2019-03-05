@@ -5,8 +5,12 @@ image:
 
 stages:
   - validate-terraform
-  - deploy-k8s
-  - configure-k8s
+  - review-deploy
+  - review-configure
+  - staging-deploy
+  - staging-configure
+  - prod-deploy
+  - prod-configure
   - destroy
 
 variables:
@@ -15,13 +19,27 @@ variables:
 #-------------------------------------------------------------------------------
 
 .devops: &devops |
-  export GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS_TEST}
-  export BRANCH_SHORT=$(echo $CI_COMMIT_REF_SLUG | cut -d '-' -f 1)
-  export OVH_DNS_KEY=${OVH_DNS_KEY_TEST}
-  export OVH_DNS_SECRET=${OVH_DNS_SECRET_TEST}
-  export OVH_CONSUMER_KEY=${OVH_DNS_CONSUMER_KEY_TEST}
-  export GKE_PROJECT=${GKE_PROJECT_TEST}
-  export GKE_REGION=${GKE_REGION_TEST}
+  if [[ ${CI_COMMIT_REF_NAME} == "prod" ]]; then
+    export GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS_PROD}
+    export OVH_DNS_KEY=${OVH_DNS_KEY_PROD}
+    export OVH_DNS_SECRET=${OVH_DNS_SECRET_PROD}
+    export OVH_CONSUMER_KEY=${OVH_DNS_CONSUMER_KEY_PROD}
+    export GKE_PROJECT=${GKE_PROJECT_PROD}
+    export GKE_REGION=${GKE_REGION_PROD}
+    export BRANCH_SHORT="prod"
+  else
+    export GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS_TEST}
+    export OVH_DNS_KEY=${OVH_DNS_KEY_TEST}
+    export OVH_DNS_SECRET=${OVH_DNS_SECRET_TEST}
+    export OVH_CONSUMER_KEY=${OVH_DNS_CONSUMER_KEY_TEST}
+    export GKE_PROJECT=${GKE_PROJECT_TEST}
+    export GKE_REGION=${GKE_REGION_TEST}
+    if [[ ${CI_COMMIT_REF_NAME} == "master" ]]; then
+      export BRANCH_SHORT="staging"
+    else
+      export BRANCH_SHORT=$(echo $CI_COMMIT_REF_SLUG | cut -d '-' -f 1)
+    fi
+  fi
 
 .terraform_devops: &terraform_devops |
   # Terraform DevOps variables and functions
@@ -99,7 +117,7 @@ variables:
 
 #-------------------------------------------------------------------------------
 
-terraform_validate:
+terraform-validate:
   stage: validate-terraform
   before_script:
     - *devops
@@ -111,7 +129,7 @@ terraform_validate:
     - terraform validate --check-variables=true
     - terraform plan
 
-terraform_change:
+terraform-change:
   stage: validate-terraform
   before_script:
     - *devops
@@ -127,8 +145,8 @@ terraform_change:
 #  scripts:
 #    -
 
-terraform_deploy:
-  stage: deploy-k8s
+review-deploy:
+  stage: review-deploy
   before_script:
     - *devops
     - *terraform_devops
@@ -139,16 +157,15 @@ terraform_deploy:
     - deploy
   environment:
     name: review/$CI_BUILD_REF_NAME
-    #url: http://${CI_BUILD_REF_SLUG}.${RANCHER_CI_STACK}.${APPS_CI_DOMAIN}
     on_stop: destroy
   only:
     - branches
   except:
-    - preprod
+    - master
     - prod
 
-configure:
-  stage: configure-k8s
+review-configure:
+  stage: review-configure
   image: google/cloud-sdk:latest
   before_script:
     - *devops
@@ -160,6 +177,71 @@ configure:
     name: review/$CI_BUILD_REF_NAME
   only:
     - branches
+  except:
+    - master
+    - prod
+
+staging-deploy-k8s:
+  stage: staging-deploy
+  before_script:
+    - *devops
+    - *terraform_devops
+  after_script:
+    - *terraform_cleanup
+  when: manual
+  script:
+    - deploy
+  only:
+    - master
+  environment:
+    name: staging
+  when: manual
+
+staging-configure-k8s:
+  stage: staging-configure
+  image: google/cloud-sdk:latest
+  before_script:
+    - *devops
+    - *k8s_devops
+  when: manual
+  script:
+    - configure-k8s
+  only:
+    - master
+  environment:
+    name: prod
+  when: manual
+
+prod-deploy-k8s:
+  stage: prod-deploy
+  before_script:
+    - *devops
+    - *terraform_devops
+  after_script:
+    - *terraform_cleanup
+  when: manual
+  script:
+    - deploy
+  only:
+    - prod
+  environment:
+    name: prod
+  when: manual
+
+prod-configure-k8s:
+  stage: prod-configure
+  image: google/cloud-sdk:latest
+  before_script:
+    - *devops
+    - *k8s_devops
+  when: manual
+  script:
+    - configure-k8s
+  only:
+    - prod
+  environment:
+    name: prod
+  when: manual
 
 destroy:
   stage: destroy
@@ -172,3 +254,7 @@ destroy:
   environment:
     name: review/$CI_BUILD_REF_NAME
     action: stop
+  only:
+    - branches
+  except:
+    - prod
